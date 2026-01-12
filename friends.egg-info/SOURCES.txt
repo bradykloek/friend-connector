@@ -1,8 +1,0 @@
-friend_connector.py
-setup.py
-friends.egg-info/PKG-INFO
-friends.egg-info/SOURCES.txt
-friends.egg-info/dependency_links.txt
-friends.egg-info/entry_points.txt
-friends.egg-info/requires.txt
-friends.egg-info/top_level.txt

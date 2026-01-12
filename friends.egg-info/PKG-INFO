@@ -1,6 +1,0 @@
-Metadata-Version: 2.4
-Name: friends
-Version: 0.0.0
-Requires-Dist: typer
-Requires-Dist: rich
-Dynamic: requires-dist
