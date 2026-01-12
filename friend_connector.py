@@ -157,17 +157,28 @@ def list():
         days_since,
         percent_overdue,
         last_valid_contact,
+        medium_history,
         MAX(percent_overdue) OVER(PARTITION BY id) as most_overdue
     FROM (
         SELECT 
-            f.id,
+            f.id as inner_id,
             f.name, 
             g.medium,
             g.frequency,
             MAX(c.date) AS last_valid_contact,
             CAST((julianday('now', 'localtime') - julianday(MAX(c.date))) AS INTEGER) AS days_since,
-            100.0 * CAST((julianday('now', 'localtime') - julianday(MAX(c.date))) AS INTEGER) / g.frequency as percent_overdue
-        FROM friends f JOIN goals g ON f.id = g.friend_id 
+            100.0 * CAST((julianday('now', 'localtime') - julianday(MAX(c.date))) AS INTEGER) / g.frequency as percent_overdue,
+            (
+                SELECT GROUP_CONCAT (recents.medium || ": " || recents.most_recent, ", ")
+                FROM(
+                    SELECT medium, MAX(date) as most_recent
+                    FROM contacts
+                    WHERE friend_id = inner_id
+                    GROUP BY medium
+                    ORDER BY date DESC
+                ) as recents
+            ) as medium_history
+        FROM friends f JOIN goals g ON inner_id = g.friend_id 
         LEFT JOIN contacts c ON f.id = c.friend_id
             AND ({medium_hierarchy.format(column = "c.medium")}) >= ({medium_hierarchy.format(column = "g.medium")})
         GROUP BY f.id, g.medium
@@ -183,8 +194,12 @@ def list():
             return
         
         prev_name = ""
+        medium_history = ""
+        
         for row in rows:
             if prev_name != row["name"]:
+                rich.print(f"   [dim]{medium_history}[/dim]")
+                print()
                 prev_name = row["name"]
                 rich.print(f"[bold]{row["name"]}[/bold]")
 
@@ -204,10 +219,9 @@ def list():
                 last_contact_string = f"{row['last_valid_contact']} ([{format}]{days} days ago: {percent}%[/{format}])"
             
             rich.print(f"   Intend to {row["medium"]} every {row["frequency"]} days: {last_contact_string}")
-
-            # if row["full_history"]:
-            #     rich.print(f"\t[dim]{row["full_history"]}[/dim]")
-            # print()
+            
+            if row["medium_history"]:
+                medium_history = row["medium_history"]
             
 
 init_db()
