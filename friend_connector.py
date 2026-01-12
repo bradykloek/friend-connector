@@ -98,7 +98,7 @@ def goal(
                 """,
                 (friend["id"], medium.value, frequency)
             )
-            rich.print(f"Added goal to {medium.value} {name} every {frequency} days")
+            rich.print(f"Set goal to {medium.value} {name} every {frequency} days")
 
 @app.command
 def rename(
