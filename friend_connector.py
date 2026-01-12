@@ -75,7 +75,7 @@ def add(
 def goal(
     name: str = typer.Argument(..., help = "The friend's full name"), 
     medium: Medium = typer.Argument(..., help = "The medium {meet, call, talk, text} that you intend to contact them by"), 
-    frequency: int = typer.Argument(..., help = "How frequently in days you want to contact them. Use 0 to remove a goal.")
+    frequency: int = typer.Argument(..., help = "How frequently in days you want to contact them. Use 0 to remove a goal")
     ):
     with get_db() as db:
         cursor = db.cursor()
@@ -122,7 +122,7 @@ def rename(
 def contact(
     name: str = typer.Argument(..., help = "The friend's full name"), 
     medium: Medium = typer.Argument(..., help = "The medium {meet, call, talk, text} that you contacted them by"), 
-    date: str = typer.Option(default = str(datetime.today()), help = "The date you contacted them in YYYY-MM-DD (defaults to current date)")
+    date: str = typer.Option(default = str(date.today()), help = "The date you contacted them in YYYY-MM-DD (defaults to current date)")
     ):
         with get_db() as db:
             cursor = db.cursor()
@@ -135,7 +135,7 @@ def contact(
                     ?, ?)""",
                 (name, medium, date)
             )
-            rich.print(f"{past_tense[medium.value].capitalize()} {name} on {date}.")
+            rich.print(f"{past_tense[medium.value].capitalize()} {name} on {date}")
 
 @app.command()
 def list():
@@ -179,7 +179,7 @@ def list():
         rows = db.execute(query).fetchall()
 
         if not rows:
-            typer.echo("Friends list is empty.")
+            typer.echo("Friends list is empty")
             return
         
         prev_name = ""
