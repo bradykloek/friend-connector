@@ -135,7 +135,7 @@ def contact(
                     ?, ?)""",
                 (name, medium, date)
             )
-            rich.print(f"{past_tense[medium.value].capitalize()} {name} on {date}")
+            rich.print(f"{past_tense[medium.value].capitalize()} with {name} on {date}")
 
 @app.command()
 def list():
@@ -188,18 +188,7 @@ def list():
         for row in rows:
             if prev_name != row["name"]:
                 if prev_name != "":
-                    medium_history = db.execute("""
-                        SELECT GROUP_CONCAT(recents.medium || ": " || recents.most_recent, ", ")
-                        FROM (
-                            SELECT medium, MAX(date) as most_recent
-                            FROM contacts
-                            WHERE friend_id = (SELECT id FROM friends WHERE name = ?)
-                            GROUP BY medium
-                            ORDER BY date DESC
-                        ) AS recents
-                        """, (prev_name,)).fetchone()[0]
-                    if medium_history:
-                        rich.print(f"   [dim]{medium_history}[/dim]")
+                    print_history(prev_name, db)
                     print()
                 prev_name = row["name"]
                 rich.print(f"[bold]{row["name"]}[/bold]")
@@ -212,16 +201,29 @@ def list():
                 if (percent >= 100):
                     format = "red"
                 elif (percent >= 75):
-                    format = "orange1"
+                    format = "dark_orange"
                 elif (percent >= 50):
-                    format = "yellow"
+                    format = "gold1"
                 else:
                     format = "green"
                 last_contact_string = f"{row['last_valid_contact']} ([{format}]{days} days ago: {percent}%[/{format}])"
             
             rich.print(f"   Intend to {row["medium"]} every {row["frequency"]} days: {last_contact_string}")
-        
-            
+        print_history(prev_name, db)  
+
+def print_history(name, db):
+    medium_history = db.execute("""
+                        SELECT GROUP_CONCAT(recents.medium || ": " || recents.most_recent, ", ")
+                        FROM (
+                            SELECT medium, MAX(date) as most_recent
+                            FROM contacts
+                            WHERE friend_id = (SELECT id FROM friends WHERE name = ?)
+                            GROUP BY medium
+                            ORDER BY date DESC
+                        ) AS recents
+                        """, (name,)).fetchone()[0]
+    if medium_history:
+        rich.print(f"   [dim]{medium_history}[/dim]")   
 
 init_db()
 app()
